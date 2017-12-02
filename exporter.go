@@ -400,6 +400,23 @@ func buildEvent(statType, metric string, value float64, relative bool, labels ma
 	}
 }
 
+func parseInfluxToLabels(component string) map[string]string {
+	labels := map[string]string{}
+	tagsReceived.Inc()
+	tags := strings.Split(component, ",")
+	for _, t := range tags {
+		kv := strings.SplitN(t, "=", 2)
+		if len(kv) < 2 || len(kv[1]) == 0 {
+			tagErrors.Inc()
+			log.Debugf("Malformed or empty Influxdb tag %s in component %s", t, component)
+			continue
+		}
+		labels[escapeMetricName(kv[0])] = kv[1]
+
+	}
+	return labels
+}
+
 func parseDogStatsDTagsToLabels(component string) map[string]string {
 	labels := map[string]string{}
 	tagsReceived.Inc()
@@ -504,6 +521,13 @@ samples:
 					continue
 				}
 			}
+		}
+		// TODO we should  no erase the previous tags
+		if strings.Contains(metric, ",") {
+			// influxdb style
+			elements := strings.SplitN(metric, ",", 2)
+			metric = elements[0]
+			labels = parseInfluxToLabels(elements[1])
 		}
 
 		for i := 0; i < multiplyEvents; i++ {
