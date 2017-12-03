@@ -376,20 +376,20 @@ func buildEvent(statType, metric string, value float64, relative bool, labels ma
 	switch statType {
 	case "c":
 		return &CounterEvent{
-			metricName: metric,
+			metricName: metric + "_counter",
 			value:      float64(value),
 			labels:     labels,
 		}, nil
 	case "g":
 		return &GaugeEvent{
-			metricName: metric,
+			metricName: metric + "_gauge",
 			value:      float64(value),
 			relative:   relative,
 			labels:     labels,
 		}, nil
 	case "ms", "h":
 		return &TimerEvent{
-			metricName: metric,
+			metricName: metric + "_timing",
 			value:      float64(value),
 			labels:     labels,
 		}, nil
